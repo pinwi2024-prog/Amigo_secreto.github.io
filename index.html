@@ -1,223 +1,83 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Juego del Amigo Secreto Seguro - 2025</title>
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #e74c3c;
-            --light: #ecf0f1;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--light);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 650px; /* Ancho ajustado */
-            text-align: center;
-        }
-        h1 { color: var(--primary); margin-bottom: 20px; }
-        input, button {
-            padding: 10px;
-            margin: 5px 0;
-            width: 100%;
-            box-sizing: border-box;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-        button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
-        }
-        button:hover { background-color: #34495e; }
-        
-        /* Vistas */
-        .hidden { display: none; }
-        
-        /* Modal y Tarjetas de Usuario */
-        .user-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .user-card {
-            background: var(--primary);
-            color: white;
-            padding: 15px 5px; 
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            font-size: 0.9em;
-            line-height: 1.2;
-        }
-        .user-card:hover { transform: translateY(-3px); }
+    <link rel="stylesheet" href="./ccs/main.css">
+    </head>
 
-        .result-box {
-            margin-top: 20px;
-            padding: 20px;
-            background: #dff9fb;
-            border: 2px dashed var(--primary);
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
-    </style>
-</head>
 <body>
 
-<div class="container">
-    
-    <div id="game-view">
-        <h1>🎄 ¿Quién eres?</h1>
-        <p>Selecciona tu nombre para ver tu amigo secreto.</p>
-        <div class="user-grid" id="user-grid">
+    <div class="container">
+
+        <div id="game-view">
+            <h1>🎄 ¿Quién eres?</h1>
+            <p>Selecciona tu nombre para ver tu amigo secreto.</p>
+            <div class="user-grid" id="user-grid">
             </div>
-        <br>
-        <p style="font-size: 0.8rem; color: #7f8c8d;">**Nota: La lista de participantes y el sorteo ya están guardados permanentemente en la web.**</p>
-    </div>
+            <br>
+            <p style="font-size: 0.8rem; color: #7f8c8d;">**Nota: La lista de participantes y el sorteo ya están
+                guardados permanentemente en la web.**</p>
+        </div>
 
-    <div id="reveal-view" class="hidden">
-        <h2 id="reveal-title">Hola...</h2>
-        <p>Ingresa tu clave de seguridad (PIN) para ver el resultado:</p>
-        <input type="number" id="authPin" placeholder="Tu PIN secreto">
-        <button onclick="checkPin()">Ver Resultado</button>
-        <button onclick="backToGame()" style="background: transparent; color: #7f8c8d; border: 1px solid #ccc;">Cancelar</button>
+        <div id="reveal-view" class="hidden">
+            <h2 id="reveal-title">Hola...</h2>
+            <p>Ingresa tu clave de seguridad (PIN) para ver el resultado:</p>
+            <input type="number" id="authPin" placeholder="Tu PIN secreto">
+            <button onclick="checkPin()">Ver Resultado</button>
+            <button onclick="backToGame()"
+                style="background: transparent; color: #7f8c8d; border: 1px solid #ccc;">Cancelar</button>
 
-        <div id="secret-result" class="hidden">
-            <p>Tu amigo secreto es:</p>
-            <div class="result-box" id="result-name">NOMBRE</div>
-            <p style="font-size: 0.8rem; color: #e74c3c;">¡Memorízalo! Este mensaje se ocultará al cerrar.</p>
-            <button onclick="backToGame()">🔒 Cerrar y Ocultar</button>
+            <div id="secret-result" class="hidden">
+                <p>Tu amigo secreto es:</p>
+                <div class="result-box" id="result-name">NOMBRE</div>
+                <p style="font-size: 0.8rem; color: #e74c3c;">¡Memorízalo! Este mensaje se ocultará al cerrar.</p>
+                <button onclick="backToGame()">🔒 Cerrar y Ocultar</button>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-    
-    // --- 1. CÓDIGO DE DISUASIÓN ANTI-INSPECCIÓN (SILENCIOSO) ---
-    
-    document.addEventListener('contextmenu', function(e) {
-        // Bloquea el clic derecho, SIN MOSTRAR ALERTA.
-        e.preventDefault(); 
-    });
-
-    document.onkeydown = function(e) {
-        // Bloquea F12 (DevTools)
-        if (e.key === 'F12') {
-            return false;
-        }
+    <script>
+        // --- CÓDIGO DE DISUASIÓN ANTI-INSPECCIÓN (SILENCIOSO) ---
         
-        // Bloquea Ctrl/Cmd + Shift + I (Abrir DevTools)
-        if (e.shiftKey && (e.ctrlKey || e.metaKey) && (e.key === 'I' || e.key === 'i')) {
-            return false;
-        }
-
-        // Bloquea Ctrl/Cmd + Shift + J (Abrir Consola de DevTools)
-        if (e.shiftKey && (e.ctrlKey || e.metaKey) && (e.key === 'J' || e.key === 'j')) {
-            return false;
-        }
-        
-        // Bloquea Ctrl/Cmd + U (Ver Código Fuente)
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) {
-            return false;
-        }
-
-        // Bloquea Ctrl/Cmd + Shift + C (Inspeccionar elemento)
-        if (e.shiftKey && (e.ctrlKey || e.metaKey) && (e.key === 'C' || e.key === 'c')) {
-            return false;
-        }
-    };
-
-    // --- 2. DATOS DEL SORTEO OCULTOS Y PARSEADOS ---
-
-    // ESTADO PERMANENTE: LISTA DE PARTICIPANTES (Nuevos PINs) Y RESULTADOS DEL 4TO SORTEO
-    const participantsData = '[{"id":1,"name":"BASTIDAS HILARIO NADIA","pin":"332862","matchId":22},{"id":2,"name":"MAGUIÑA VILLARREAL JOSE GUADALUPE","pin":"588143","matchId":11},{"id":3,"name":"HOYOS ESQUIVES EDUARDO ENRIQUE","pin":"674693","matchId":14},{"id":4,"name":"MOLLEDA VARGAS REYNALDO","pin":"530981","matchId":18},{"id":5,"name":"CARDOZA NAVARRO WILTON","pin":"705430","matchId":31},{"id":6,"name":"DELGADO REVOREDO ANGELICA ROSALIA DE JESUS","pin":"915209","matchId":24},{"id":7,"name":"FABIAN ZEVALLOS MIGUEL ANGEL","pin":"668641","matchId":16},{"id":8,"name":"CUETO DELGADO ANA CECILIA","pin":"237811","matchId":25},{"id":9,"name":"JULCA ARANDA NISAR YERSON","pin":"711942","matchId":5},{"id":10,"name":"HUAMAN MAGALLANES JIMMY STICK","pin":"852550","matchId":23},{"id":11,"name":"VALERIO MONTESINOS LUIS MIGUEL","pin":"293847","matchId":8},{"id":12,"name":"TALAVERA COSME ARTURO","pin":"534315","matchId":3},{"id":13,"name":"YAURI ROZALES JESUS JOEL","pin":"823029","matchId":19},{"id":14,"name":"CAMPOS MENACHO JHON ERIK RICHARD","pin":"256572","matchId":10},{"id":15,"name":"PEÑA RAMIREZ JOHN ALEXANDER","pin":"539140","matchId":17},{"id":16,"name":"MIRAVAL LEIVA YULISSA","pin":"840293","matchId":29},{"id":17,"name":"VILLAR LAVERIANO TEODORA","pin":"566870","matchId":27},{"id":18,"name":"ALEY BURGA PEDRO JAIME","pin":"487494","matchId":20},{"id":19,"name":"ALVAREZ ANTEZANA LUIS ANGEL","pin":"940365","matchId":26},{"id":20,"name":"YUPANQUI ROJAS JEANCARLOS ELI","pin":"523084","matchId":1},{"id":21,"name":"ARIAS ESPINOZA GILMER MAXIMO","pin":"143403","matchId":7},{"id":22,"name":"IHUARAQUI MURAYARI RONER","pin":"669236","matchId":13},{"id":23,"name":"AQUINO YARINGAÑO MELISSA GINA","pin":"875206","matchId":12},{"id":24,"name":"VILELA GHERSI WILMER STEWAR","pin":"472249","matchId":2},{"id":25,"name":"CUEVA LOPEZ ELUIS JERSON","pin":"186634","matchId":4},{"id":26,"name":"CHIPANA CHIPANA CRISTIAN","pin":"818789","matchId":30},{"id":27,"name":"HERRERA SARANGO LUIGI YASMANY","pin":"195328","matchId":6},{"id":28,"name":"HUAYHUA YARIHUAMAN SANTIAGO MATIAS","pin":"504047","matchId":15},{"id":29,"name":"MIRANDA HUACACHI PEDRO JUNIOR","pin":"269485","matchId":9},{"id":30,"name":"ESTRADA PURIZACA EDGAR SAUL","pin":"622468","matchId":21},{"id":31,"name":"LAMA AGUILAR HUGO MANUEL","pin":"732837","matchId":28}]';
-
-    // Parsear los datos codificados al inicio de la aplicación
-    let participants; 
-    try {
-        participants = JSON.parse(participantsData);
-    } catch (e) {
-        console.error("Error al cargar los datos del sorteo:", e);
-        participants = [];
-    }
-
-    let selectedUser = null;
-
-    // Función que inicia la aplicación y renderiza la cuadrícula
-    function initApp() {
-        if (participants.length === 0) {
-            alert("Error: No se pudieron cargar los datos del sorteo.");
-            return;
-        }
-        renderGameGrid();
-    }
-
-    // Renderizar tarjetas de juego
-    function renderGameGrid() {
-        const grid = document.getElementById('user-grid');
-        grid.innerHTML = '';
-        participants.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'user-card';
-            card.innerText = p.name;
-            card.onclick = () => selectUser(p);
-            grid.appendChild(card);
+        // Bloquea el clic derecho
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault(); 
         });
-    }
 
-    // Seleccionar usuario para revelar
-    function selectUser(user) {
-        selectedUser = user;
-        document.getElementById('game-view').classList.add('hidden');
-        document.getElementById('reveal-view').classList.remove('hidden');
-        document.getElementById('reveal-title').innerText = `Hola, ${user.name}`;
-        document.getElementById('authPin').value = '';
-        document.getElementById('secret-result').classList.add('hidden');
-    }
+        // Bloquea teclas de inspección (F12, Ctrl+Shift+I/J/C, Ctrl+U)
+        document.onkeydown = function(e) {
+            // Bloquea F12 (DevTools)
+            if (e.key === 'F12') {
+                return false;
+            }
+            
+            // Bloquea Ctrl/Cmd + Shift + I (Abrir DevTools)
+            if (e.shiftKey && (e.ctrlKey || e.metaKey) && (e.key === 'I' || e.key === 'i')) {
+                return false;
+            }
 
-    // Verificar PIN y mostrar resultado
-    function checkPin() {
-        const inputPin = document.getElementById('authPin').value;
-        if (inputPin === selectedUser.pin) {
-            // Encuentra el nombre del amigo secreto usando el matchId
-            const match = participants.find(p => p.id === selectedUser.matchId);
-            document.getElementById('result-name').innerText = match.name;
-            document.getElementById('secret-result').classList.remove('hidden');
-        } else {
-            document.getElementById('secret-result').classList.add('hidden');
-            alert("PIN Incorrecto. Inténtalo de nuevo.");
-            document.getElementById('authPin').value = '';
-        }
-    }
+            // Bloquea Ctrl/Cmd + Shift + J (Abrir Consola de DevTools)
+            if (e.shiftKey && (e.ctrlKey || e.metaKey) && (e.key === 'J' || e.key === 'j')) {
+                return false;
+            }
+            
+            // Bloquea Ctrl/Cmd + U (Ver Código Fuente)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'U' || e.key === 'u')) {
+                return false;
+            }
 
-    // Volver a la pantalla de selección
-    function backToGame() {
-        selectedUser = null;
-        document.getElementById('reveal-view').classList.add('hidden');
-        document.getElementById('game-view').classList.remove('hidden');
-    }
-
-    // Inicializar la aplicación al cargar la página
-    window.onload = initApp;
-</script>
+            // Bloquea Ctrl/Cmd + Shift + C (Inspeccionar elemento)
+            if (e.shiftKey && (e.ctrlKey || e.metaKey) && (e.key === 'C' || e.key === 'c')) {
+                return false;
+            }
+        };
+    </script>
+    
+    <script src="./js/app.js"></script>
 
 </body>
+
 </html>
